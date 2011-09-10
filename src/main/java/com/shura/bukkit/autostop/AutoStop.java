@@ -101,7 +101,10 @@ public class AutoStop extends JavaPlugin {
     public void run() {
       while (time.compareTo(new Date()) >= 0) {
         try {
-          sleep(time.getTime() - current(), 0);
+          long sleep_time = time.getTime() - current();
+          if (sleep_time > 0) {
+            sleep(sleep_time, 0);
+          }
 
           if (isSuspended()) {
             synchronized(this) {
@@ -136,8 +139,8 @@ public class AutoStop extends JavaPlugin {
   public void onEnable() {
     PluginManager pm = getServer().getPluginManager();
 
-    pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Highest, this);
-    pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Highest, this);
+    pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Monitor, this);
+    pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Monitor, this);
 
     PluginDescriptionFile pdfFile = this.getDescription();
 
@@ -175,13 +178,16 @@ public class AutoStop extends JavaPlugin {
 
     try {
       System.out.println("Running: " + cmd);
-      Process p = (new ProcessBuilder("/bin/sh", "-c", cmd)).start();
+      Process p = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", cmd });
       p.waitFor();
 
       if (p.exitValue() != 0) {
         System.out.println(String.format("Command exited with code: %d", p.exitValue()));
+        return false;
       }
     } catch (Exception e) {
+      e.printStackTrace();
+      return false;
     }
 
     return true;
