@@ -1,0 +1,3 @@
+name: AutoStop
+main: com.shura.bukkit.autostop.AutoStop
+version: 0.1
